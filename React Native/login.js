@@ -13,12 +13,14 @@ const API_URL = 'https://your-api.com';
 
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
+
   const [form, setForm] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
   });
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -28,6 +30,7 @@ export default function Login() {
     setError('');
   };
 
+  // 1. VALIDATE
   const validate = () => {
     if (!isLogin && !form.name.trim())
       return 'Name is required';
@@ -36,7 +39,7 @@ export default function Login() {
       return 'Email is required';
 
     if (!form.email.includes('@'))
-      return 'Enter a valid email';
+      return 'Invalid email';
 
     if (form.password.length < 6)
       return 'Password must be at least 6 characters';
@@ -47,48 +50,62 @@ export default function Login() {
     return '';
   };
 
-  const submit = async () => {
-    const validationError = validate();
+  // 2. LOGIN API
+  const loginUser = async () => {
+    const response = await fetch(`${API_URL}/login`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        email: form.email.trim(),
+        password: form.password,
+      }),
+    });
 
-    if (validationError) {
-      setError(validationError);
+    const data = await response.json();
+
+    if (!response.ok)
+      throw new Error(data.message || 'Login failed');
+
+    Alert.alert('Success', 'Login successful');
+  };
+
+  // 3. REGISTER API
+  const registerUser = async () => {
+    const response = await fetch(`${API_URL}/register`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        password: form.password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok)
+      throw new Error(data.message || 'Registration failed');
+
+    Alert.alert('Success', 'Registration successful');
+    switchMode();
+  };
+
+  // 4. SUBMIT
+  const submit = async () => {
+    const message = validate();
+
+    if (message) {
+      setError(message);
       return;
     }
 
     setLoading(true);
 
     try {
-      const response = await fetch(
-        `${API_URL}/${isLogin ? 'login' : 'register'}`,
-        {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify(
-            isLogin
-              ? {
-                  email: form.email.trim(),
-                  password: form.password,
-                }
-              : {
-                  name: form.name.trim(),
-                  email: form.email.trim(),
-                  password: form.password,
-                },
-          ),
-        },
-      );
-
-      const data = await response.json();
-
-      if (!response.ok)
-        throw new Error(data.message || 'Request failed');
-
-      Alert.alert(
-        'Success',
-        isLogin ? 'Login successful' : 'Registration successful',
-      );
-
-      if (!isLogin) switchMode();
+      if (isLogin)
+        await loginUser();
+      else
+        await registerUser();
     } catch (e) {
       Alert.alert('Error', e.message);
     } finally {
@@ -96,19 +113,23 @@ export default function Login() {
     }
   };
 
+  // 5. SWITCH LOGIN / REGISTER
   const switchMode = () => {
     setIsLogin(!isLogin);
+
     setForm({
       name: '',
       email: '',
       password: '',
       confirmPassword: '',
     });
+
     setError('');
   };
 
   return (
     <View style={styles.container}>
+
       <Text style={styles.title}>
         {isLogin ? 'Login' : 'Register'}
       </Text>
@@ -168,6 +189,7 @@ export default function Login() {
         style={styles.button}
         disabled={loading}
         onPress={submit}>
+
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
@@ -175,6 +197,7 @@ export default function Login() {
             {isLogin ? 'LOGIN' : 'REGISTER'}
           </Text>
         )}
+
       </TouchableOpacity>
 
       <TouchableOpacity onPress={switchMode}>
@@ -184,6 +207,7 @@ export default function Login() {
             : 'Already have an account? Login'}
         </Text>
       </TouchableOpacity>
+
     </View>
   );
 }
