@@ -1,17 +1,10 @@
-function isPalindrome(str) {
-    let left = 0;
-    let right = str.length - 1;
+const input = prompt("Enter a word or number:");
+const value = String(input);
 
-    while (left < right) {
-        if (str[left] !== str[right]) {
-            return false;
-        }
-        left++;
-        right--;
-    }
+const reversed = value.split("").reverse().join("");
 
-    return true;
+if (value === reversed) {
+  console.log(`${value} is a Palindrome`);
+} else {
+  console.log(`${value} is not a Palindrome`);
 }
-
-console.log(isPalindrome("madam"));   // true
-console.log(isPalindrome("hello"));   // false
