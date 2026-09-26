@@ -34,7 +34,6 @@ export default function App() {
   // Pagination
   const pageData = filterData.slice((page - 1) * 10, page * 10);
 
-  const totalPages = Math.ceil(filterData.length / 10);
 
   return (
     <div className="container">
@@ -74,7 +73,7 @@ export default function App() {
           )}
 
           <p className="page">
-            Page {page} of {totalPages || 1}
+            {page}
           </p>
 
           <div className="button-container">
